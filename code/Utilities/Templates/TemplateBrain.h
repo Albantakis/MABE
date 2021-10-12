@@ -21,14 +21,14 @@ class {{MODULE_NAME}}Brain : public AbstractBrain {
 public:
     {{MODULE_NAME}}Brain() = delete;
 
-    {{MODULE_NAME}}Brain(int ins, int outs, std::shared_ptr<ParametersTable> PT_);
+    {{MODULE_NAME}}Brain(int ins, int outs, std::shared_ptr<ParametersTable> PT);
 
     virtual ~{{MODULE_NAME}}Brain() = default;
 
     virtual void update();
 
     // make a copy of the brain that called this
-    virtual std::shared_ptr<AbstractBrain> makeCopy(std::shared_ptr<ParametersTable> PT_);
+    virtual std::shared_ptr<AbstractBrain> makeCopy(std::shared_ptr<ParametersTable> PT);
 
     // Make a brain like the brain that called this function, using genomes and initalizing other elements.
     virtual std::shared_ptr<AbstractBrain> makeBrain(std::unordered_map<std::string, std::shared_ptr<AbstractGenome>>& _genomes);
@@ -52,16 +52,6 @@ public:
     virtual void resetInputs();
 
     virtual void resetBrain();
-
-    // setRecordActivity and setRecordFileName provide a standard way to set up brain
-    // activity recoding. How and when the brain records activity is up to the brain developer
-    virtual void inline setRecordActivity(bool _recordActivity) {
-        recordActivity = _recordActivity;
-    }
-
-    virtual void inline setRecordFileName(std::string _recordActivityFileName) {
-        recordActivityFileName = _recordActivityFileName;
-    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // these functions need to be filled in if genomes are being used in this brain
