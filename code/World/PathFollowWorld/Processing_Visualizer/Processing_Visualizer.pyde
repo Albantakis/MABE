@@ -6,7 +6,8 @@
 # left mouse pauses and restarts
 
 ### replace path ###
-fileName = 'c:/Users/cliff//WORK/MABE_DEV_4_25_2021_FRAG/work/pathVisualization.txt'
+fileName = '/Users/larissa_alb/pydev/MABE/work/A4_C0__/126/pathVisualization.txt'
+#fileName = 'c:/Users/cliff//WORK/MABE_DEV_4_25_2021_FRAG/work/pathVisualization.txt'
 #fileName = 'c:/Users/cliff//WORK/MABE_DEV_3_26_2021_FRAG/PathFollow_TEST_2_extra_out/pathVisualization.txt'
 #fileName = 'c:/Users/cliff//fragWork2/Jan_31_path/C00_161_pathVisualization.txt'
 #fileName = 'c:/Users/cliff//fragWork2/Jan_31_path/C05_170_pathVisualization.txt'
@@ -17,7 +18,7 @@ windowSizeX = 2000  # change the height of the window
 windowSizeY = 1000  # change the width of the window
 gridSize = 25       # change scale
 
-fps = 4 # Frames Per Second, can also be adjusted with left and right arrows
+fps = 10 # Frames Per Second, can also be adjusted with left and right arrows
 
 ############################################################
 ##

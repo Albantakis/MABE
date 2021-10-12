@@ -1,9 +1,11 @@
 % World
   - Logic16
+  - NBack
   - BlockCatch
-  * Test
+  + Test
+  * PathFollow
+  + TPM_GENERATOR
   - Berry
-  - PathFollow
 
 % Genome
   * Circular
@@ -15,17 +17,18 @@
 
 % Brain
   - Wire
-  * CGP
-  - Markov
+  + Markov
+  - CGP
   - LSTM
   - BiLog
   - ANN
+  - RNN
   - Human
   - ConstantValues
 
 % Optimizer
   - Islands
   - Lexicase
-  + Roulette
   * Tournament
+  - Roulette
 
