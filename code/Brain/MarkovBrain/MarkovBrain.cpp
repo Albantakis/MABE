@@ -372,6 +372,16 @@ void MarkovBrain::update() {
     }
 }
 
+//NEW FEATURES
+void MarkovBrain::updateAction() {
+  if(recordActivity){
+    Actions.push_back(actionValue);
+    CorrectTurns.push_back(turnValue);
+    EncodedSymbols.push_back(symbolValues);
+  }
+
+}
+
 void MarkovBrain::inOutReMap() { // remaps genome site values to valid brain
                                  // state addresses
   for (auto &g : gates)
