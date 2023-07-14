@@ -708,7 +708,7 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
 
             auto outputStateSet = TS::remapToIntTimeSeries(brain->getOutputStates(), TS::RemapRules::TRIT);
 
-            auto hiddenFullStatesSet = TS::remapToIntTimeSeries(brain->getHiddenStates(), TS::RemapRules::UNIQUE);
+            auto hiddenFullStatesSet = TS::remapToIntTimeSeries(brain->getHiddenStates(), TS::RemapRules::TRIT);
             auto hiddenAfterStateSet = TS::trimTimeSeries(hiddenFullStatesSet, TS::Position::FIRST, lifeTimes);
             auto hiddenBeforeStateSet = TS::trimTimeSeries(hiddenFullStatesSet, TS::Position::LAST, lifeTimes);
 
