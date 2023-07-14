@@ -64,6 +64,40 @@ std::string AbstractBrain::getType() {
     return "Undefined";
 }
 
+//NEW FEATURES
+void AbstractBrain::setAction(const int& value) {
+    // 0: backward, 1: forward, 2: left, 3: right
+    if (value == -1 || value == 0 || value == 1 || value == 2 || value == 3) {
+        actionValue = value;
+    }
+    else {
+        std::cout << "in Brain::setAction : Writing to invalid input"
+            << std::endl;
+        exit(1);
+    }
+}
+
+//NEW FEATURES
+void AbstractBrain::setTurn(const int& value) {
+    // 0: incorrect, 1: correct, -1: indicate it is not a turn or we don't care about the move is correct or not
+    if (value == 0 || value == 1 || value == -1) {
+        turnValue = value;
+    }
+    else {
+        std::cout << "in Brain::setTurn() : Writing to invalid input"
+            << std::endl;
+        exit(1);
+    }
+}
+
+//NEW FEATURES
+void AbstractBrain::setSymbol(const int& left, const int& right) {
+    // we only need two value inside the symbolValues vector each time, so we clear it firstly.
+    symbolValues.clear();
+    symbolValues.push_back(left);
+    symbolValues.push_back(right);
+}
+
 void AbstractBrain::setInput(const int& inputAddress, const double& value) {
     if (inputAddress < nrInputValues) {
         inputValues[inputAddress] = value;

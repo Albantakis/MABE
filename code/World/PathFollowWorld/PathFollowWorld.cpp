@@ -644,27 +644,58 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
                             std::cout << "outputs: " << out0 << "," << out1 << "," << out2 << std::endl;
                         }
 
+                        //NEW FEATURES added in the following section
+                        // Action: -1: no action, 0: backward, 1: forward, 2: turn left, 3: turn right
+                        // Turn: 0: the agent make a wrong turn, 1: correct turn, -1: the agent is not at a turn symbol or perform no actions.   
+
                         if (out2 == 1) { // step backwards
                             xPos = std::max(0, std::min(xPos - dx[direction], mapSizes[mapID].first - 1));
                             yPos = std::max(0, std::min(yPos - dy[direction], mapSizes[mapID].second - 1));
+                            brain->setAction(0); // indicate the action is back
+                            brain->setTurn(-1);
                         }
                         else if (out0 == 1 && out1 == 1 && out2 == 0) { // step forwards
                             xPos = std::max(0, std::min(xPos + dx[direction], mapSizes[mapID].first - 1));
                             yPos = std::max(0, std::min(yPos + dy[direction], mapSizes[mapID].second - 1));
+                            brain->setAction(1); // indicate the action is forward
+                            brain->setTurn(-1);
                         }
                         else if (out0 == 1 && out1 == 0 && out2 == 0) { // turn left
                             direction = loopMod(direction - 1, 8);
+                            brain->setAction(2); // indicate the action is turn left
+
+                            // we only consder the agent made a correct action when there is a turn symbol
                             if (mapValueHere == 2) {
                                 correctTurns++;
+                                brain->setTurn(1);
+                            } else if (mapValueHere == 3){
+                                brain->setTurn(0);
+                            } else {
+                                brain->setTurn(-1);
                             }
+                            
                         }
                         else if (out0 == 0 && out1 == 1 && out2 == 0) { // turn right
                             direction = loopMod(direction + 1, 8);
+                            brain->setAction(3); // indicate the action is turn right
+                            
+                            // we only consder the agent made a correct action when there is a turn symbol
                             if (mapValueHere == 3) {
                                 correctTurns++;
+                                brain->setTurn(1);
+                            } else if (mapValueHere == 2){
+                                brain->setTurn(0);
+                            } else {
+                                brain->setTurn(-1);
                             }
+                            
+                        }else { // if the agent does not perform any actions 
+                            brain->setAction(-1);
+                            brain->setTurn(-1);
                         }
-                        // else (0,0,0) do nothing
+                      
+                        brain->setSymbol(sign2, sign3);
+                        brain->updateAction();
                     }
 
                 } // current path finished
@@ -702,12 +733,17 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
 
             std::cout << "\nAlalyze Mode:  organism with ID " << thisID << " scored " << org->dataMap.getAverage("score") << std::endl;
             
-            auto lifeTimes = brain->getLifeTimes();
+            //NEW FEATURES
+            auto actions = brain->getActions();
+            auto correctTurns = brain->getCorrectTurns();
+            auto encodedSymbols = brain->getEncodedSymbols();
             
+            auto lifeTimes = brain->getLifeTimes();
             auto inputStateSet = TS::remapToIntTimeSeries(brain->getInputStates(), TS::RemapRules::TRIT);
-
             auto outputStateSet = TS::remapToIntTimeSeries(brain->getOutputStates(), TS::RemapRules::TRIT);
 
+            //here modify the rules of transforming time series to make all the hiddenstates contains only 0 and 1
+            //auto hiddenFullStatesSet = TS::remapToIntTimeSeries(brain->getHiddenStates(), TS::RemapRules::UNIQUE);
             auto hiddenFullStatesSet = TS::remapToIntTimeSeries(brain->getHiddenStates(), TS::RemapRules::TRIT);
             auto hiddenAfterStateSet = TS::trimTimeSeries(hiddenFullStatesSet, TS::Position::FIRST, lifeTimes);
             auto hiddenBeforeStateSet = TS::trimTimeSeries(hiddenFullStatesSet, TS::Position::LAST, lifeTimes);
@@ -785,6 +821,11 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
                 std::string fileStr = "";
                 if (brain->recurrentOutput) {
 
+                    //NEW FEATURES
+                    auto discreetAction = actions;
+                    auto discreetTurn = correctTurns;
+                    auto discreetSymbol = encodedSymbols;
+
                     auto discreetInput = inputStateSet;
                     auto discreetOutputBefore = TS::trimTimeSeries(outputStateSet, TS::Position::LAST, lifeTimes);;
                     auto discreetOutputAfter = TS::trimTimeSeries(outputStateSet, TS::Position::FIRST, lifeTimes);
@@ -794,7 +835,7 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
                     int lifeCounter = 0;
                     int lifeTimeCounter = 0;
 
-                    fileStr += "input,outputBefore,outputAfter,hiddenBefore,hiddenAfter,time,life,lifeTime\n";
+                    fileStr += "input,outputBefore,outputAfter,hiddenBefore,hiddenAfter,time,life,lifeTime,encodedSymbol,action,correctTurn\n";
                     for (int i = 0; i < discreetInput.size(); i++) {
                         fileStr += "\"" + TS::TimeSeriesSampleToString(discreetInput[i], ",") + "\",";
                         fileStr += "\"" + TS::TimeSeriesSampleToString(discreetOutputBefore[i], ",") + "\",";
@@ -804,7 +845,12 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
 
                         fileStr += std::to_string(timeCounter) + ",";
                         fileStr += std::to_string(lifeCounter) + ",";
-                        fileStr += std::to_string(lifeTimeCounter) + "\n";
+                        fileStr += std::to_string(lifeTimeCounter) + ",";
+
+                        //NEW FEATURES
+                        fileStr += "\"" + TS::TimeSeriesSampleToString(discreetSymbol[i], ",") + "\",";
+                        fileStr += std::to_string(discreetAction[i]) + ",";
+                        fileStr += std::to_string(discreetTurn[i]) + "\n";
 
                         timeCounter++;
                         lifeTimeCounter++;
@@ -816,6 +862,11 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
                 }
                 else {
 
+                    //NEW FEATURES
+                    auto discreetAction = actions;
+                    auto discreetTurn = correctTurns;
+                    auto discreetSymbol = encodedSymbols;
+
                     auto discreetInput = inputStateSet;
                     auto discreetOutput = outputStateSet;
                     auto discreetHiddenBefore = TS::trimTimeSeries(hiddenFullStatesSet, TS::Position::LAST, lifeTimes);
@@ -823,7 +874,7 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
                     int timeCounter = 0;
                     int lifeCounter = 0;
                     int lifeTimeCounter = 0;
-                    fileStr += "input,output,hiddenBefore,hiddenAfter,time,life,lifeTime\n";
+                    fileStr += "input,output,hiddenBefore,hiddenAfter,time,life,lifeTime,encodedSymbol,action,correctTurn\n";
                     for (int i = 0; i < discreetInput.size(); i++) {
                         fileStr += "\"" + TS::TimeSeriesSampleToString(discreetInput[i], ",") + "\",";
                         fileStr += "\"" + TS::TimeSeriesSampleToString(discreetOutput[i], ",") + "\",";
@@ -832,7 +883,12 @@ auto PathFollowWorld::evaluate(map<string, shared_ptr<Group>>& groups, int analy
 
                         fileStr += std::to_string(timeCounter) + ",";
                         fileStr += std::to_string(lifeCounter) + ",";
-                        fileStr += std::to_string(lifeTimeCounter) + "\n";
+                        fileStr += std::to_string(lifeTimeCounter) + ",";
+
+                        //NEW FEATURES
+                        fileStr += "\"" + TS::TimeSeriesSampleToString(discreetSymbol[i], ",") + "\",";
+                        fileStr += std::to_string(discreetAction[i]) + ",";
+                        fileStr += std::to_string(discreetTurn[i]) + "\n";
 
                         timeCounter++;
                         lifeTimeCounter++;

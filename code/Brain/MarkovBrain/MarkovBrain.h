@@ -122,6 +122,9 @@ public:
 
     virtual void update() override;
 
+    //NEW FEATURES
+    virtual void updateAction() override;
+
     void inOutReMap();
 
     // Make a brain like the brain that called this function, using genomes and

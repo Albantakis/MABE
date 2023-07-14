@@ -33,6 +33,11 @@ public:
     std::vector<double> inputValues;
     std::vector<double> outputValues;
 
+    //NEW FEATURES
+    int actionValue;  //the actual action that the agent did
+    int turnValue;  //if it encounters a turn symbol, it indicates if the turn is correct
+    std::vector<int> symbolValues; //record the encoded symbol for the agent at each trial 
+
     // brainConnectome - a square map of input,output,hidden x input,output,hidden where each cell is the count of actual wires from T -> T+1
     // input and output should likely by input and output, hidden needs to be determined by the brain designer
     virtual std::vector<std::vector<int>> getConnectome() {
@@ -55,6 +60,9 @@ public:
 
     virtual void update() = 0;
 
+    //NEW FEATURES
+    virtual void updateAction() = 0;  
+
     // make a copy of the brain that called this
     virtual std::shared_ptr<AbstractBrain> makeCopy(std::shared_ptr<ParametersTable> PT_);
 
@@ -66,6 +74,11 @@ public:
     virtual DataMap getStats(std::string& prefix); // return a vector of DataMap of stats from this brain
 
     virtual std::string getType(); // return the type of this brain
+
+    //NEW FEATURES
+    virtual void setTurn(const int& value); 
+    virtual void setAction(const int& value); 
+    virtual void setSymbol(const int& left, const int& right);
 
     virtual void setInput(const int& inputAddress, const double& value);
 
@@ -179,6 +192,21 @@ public:
         recordActivity = setting;
     };
 
+    //NEW FEATURES
+    std::vector<int> CorrectTurns = {}; 
+    std::vector<int> Actions = {}; 
+    TS::intTimeSeries EncodedSymbols;
+
+    std::vector<int> getCorrectTurns() {
+        return CorrectTurns;
+    }
+    std::vector<int> getActions() {
+        return Actions;
+    }
+    TS::intTimeSeries getEncodedSymbols() {
+        return EncodedSymbols;
+    }
+
     TS::TimeSeries InputStates;
     TS::TimeSeries OutputStates;
     TS::TimeSeries HiddenStates;
@@ -198,6 +226,12 @@ public:
     }
 
     void resetStatesAndLifetimes() {
+
+        //NEW FEATURES
+        CorrectTurns = {}; 
+        Actions = {};
+        EncodedSymbols.clear();
+
         InputStates.clear();
         OutputStates.clear();
         HiddenStates.clear();
