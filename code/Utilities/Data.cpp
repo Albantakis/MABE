@@ -32,19 +32,34 @@ std::map<std::string, int> DataMap::knownOutputBehaviors = {
 
 void FileManager::openAndWriteToFile(const std::string &fileName, const std::string &data, const std::string &header) {
   openFile( fileName, header); // make sure that the file is open and ready to be written to
-  if (!data.empty()) {files[fileName] << data << "\n" << std::flush;}
+  if (!data.empty()) {
+    files[fileName] << data << "\n" << std::flush;
+    //NEW FEATURE
+    closeFile(fileName); // close the file after writing
+  }
 }
 
 [[deprecated("Use openAndWriteToFile() instead.")]]
 void FileManager::writeToFile(const std::string &fileName, const std::string &data, const std::string &header) {
   openFile( fileName, header); // make sure that the file is open and ready to be written to
-  if (!data.empty()) {files[fileName] << data << "\n" << std::flush;}
+  if (!data.empty()) {
+    files[fileName] << data << "\n" << std::flush;
+    //NEW FEATURE
+    closeFile(fileName); // close the file after writing
+  }
 }
 
 void FileManager::openFile(const std::string &fileName, const std::string &header) {
   if (files.find(fileName) == files.end()) { // if file has not be initialized yet
     files.emplace(make_pair(fileName, std::ofstream())); // make an ofstream for the new file and place in FileManager::files
     files[fileName].open(std::string(outputPrefix) + fileName); // clear file contents and open in write mode
+
+    //NEW FEATURE
+    //if the file can not be opened, print error message
+    if (!files[fileName].is_open()) {
+      throw std::runtime_error("Failed to open file " + fileName);
+    }
+    
     fileStates[fileName] = true; // this file is now open
     if (!header.empty()) { // if there is a header string, write this to the new file
       files[fileName] << header << "\n";
@@ -52,6 +67,13 @@ void FileManager::openFile(const std::string &fileName, const std::string &heade
   }
   if (fileStates[fileName] == false) { // if file is closed ...
     files[fileName].open(std::string(outputPrefix) + fileName, std::ios::out | std::ios::app); // open file in append mode
+    
+    //NEW FEATURE
+    //if the file can not be opened, print error message
+    if (!files[fileName].is_open()) {
+      throw std::runtime_error("Failed to open file " + fileName);
+    }
+
   }
 }
 
